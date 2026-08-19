@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Lagu Estafet - 17 Agustusan Disdik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --maroon: #7A1128;
+    --maroon-dark: #4E0A1A;
+    --cream: #FBF2DD;
+    --parchment: #F4E7C7;
+    --gold: #C9A227;
+    --gold-light: #E8C766;
+    --ink: #2A1608;
+    --ink-soft: #6B5236;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,162,39,0.10), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(201,162,39,0.10), transparent 45%),
+      var(--maroon-dark);
+    font-family:'Inter', sans-serif;
+    color: var(--ink);
+    padding: 48px 20px 80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--gold-light);
+    margin-bottom: 10px;
+    text-align:center;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 46px);
+    color: var(--cream);
+    margin: 0 0 6px;
+    text-align:center;
+    letter-spacing: -0.01em;
+  }
+  .subtitle{
+    color: rgba(251,242,221,0.75);
+    font-size: 15px;
+    text-align:center;
+    margin: 0 0 36px;
+  }
+  .board{
+    background: var(--cream);
+    border: 3px solid var(--gold);
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 720px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 560px){
+    .grid{ grid-template-columns: repeat(3, 1fr); }
+    .board{ padding: 22px; }
+  }
+  .tile{
+    aspect-ratio: 1;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(160deg, var(--maroon) 0%, var(--maroon-dark) 100%);
+    color: var(--cream);
+    font-family:'Fraunces', serif;
+    font-weight: 700;
+    font-size: 30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 4px 0 var(--maroon-dark), 0 8px 16px rgba(0,0,0,0.25);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    position: relative;
+  }
+  .tile:hover:not(.used){
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 var(--maroon-dark), 0 12px 20px rgba(0,0,0,0.3);
+  }
+  .tile:active:not(.used){
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 var(--maroon-dark), 0 4px 8px rgba(0,0,0,0.25);
+  }
+  .tile.used{
+    cursor: pointer;
+    background: var(--parchment);
+    color: var(--ink-soft);
+    box-shadow: inset 0 0 0 2px rgba(201,162,39,0.4);
+    opacity: 0.65;
+  }
+  .tile.used::after{
+    content: '✓';
+    position:absolute;
+    top:6px;
+    right:9px;
+    font-size:13px;
+    font-family:'Inter', sans-serif;
+    color: var(--gold);
+  }
+  .footer-row{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed rgba(122,17,40,0.25);
+  }
+  .progress{
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .progress b{ color: var(--maroon); }
+  .reset-btn{
+    font-family:'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--maroon);
+    background: none;
+    border: 1.5px solid var(--maroon);
+    border-radius: 999px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .reset-btn:hover{
+    background: var(--maroon);
+    color: var(--cream);
+  }
+  .player-panel{
+    width: 100%;
+    max-width: 720px;
+    margin-top: 20px;
+    background: var(--cream);
+    border: 3px solid var(--gold);
+    border-radius: 20px;
+    padding: 26px 30px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    display: none;
+  }
+  .player-panel.open{ display: block; }
+  .player-top{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .player-number{
+    font-family:'Fraunces', serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  .player-title{
+    font-family:'Fraunces', serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--maroon);
+    margin: 0 0 2px;
+    line-height:1.2;
+  }
+  .player-artist{
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .player-close{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .seek-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .time-label{
+    font-size: 12px;
+    color: var(--ink-soft);
+    min-width: 38px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"]{
+    flex: 1;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--parchment);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--maroon);
+    cursor: pointer;
+    border: 2px solid var(--cream);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--maroon);
+    cursor: pointer;
+    border: 2px solid var(--cream);
+    box-shadow: 0 0 0 1px var(--gold);
+  }
+  .controls-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 14px;
+  }
+  .ctrl-btn{
+    background: var(--parchment);
+    border: none;
+    color: var(--maroon);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .ctrl-btn:hover{ background: var(--gold-light); }
+  .play-btn{
+    background: var(--maroon);
+    color: var(--cream);
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 0;
+  }
+  .play-btn:hover{ background: var(--maroon-dark); }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Dinas Pendidikan Kabupaten Bandung</div>
+<img src="asset/Logo disdik kab bandung.jpg" alt="Logo Disdik" style="width: 80px; margin-bottom: 20px; border-radius: 8px; border-color: black; box-shadow: 0 10px 12px rgba(0,0,0,0.25); margin-top: 10px;">
+<h1>Kuis lagu estafet 17 Agustusan</h1>
+<p class="subtitle">Pilih satu nomor, lagunya langsung muter di sini</p>
+
+<div class="board">
+  <div class="grid" id="grid"></div>
+  <div class="footer-row">
+    <div class="progress"><b id="playedCount">0</b> / 10 lagu sudah dibuka</div>
+    <button class="reset-btn" id="resetBtn">Reset semua</button>
+  </div>
+</div>
+
+<div class="player-panel" id="playerPanel">
+  <div class="player-top">
+    <div>
+      <p class="player-number" id="playerNumber">Nomor 1</p>
+      <p class="player-title" id="playerTitle">Judul lagu</p>
+      <p class="player-artist" id="playerArtist">Artis</p>
+    </div>
+    <button class="player-close" id="playerClose" aria-label="Tutup">&times;</button>
+  </div>
+
+  <div class="seek-row">
+    <span class="time-label" id="timeCurrent">0:00</span>
+    <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
+    <span class="time-label" id="timeTotal">0:00</span>
+  </div>
+
+  <div class="controls-row">
+    <button class="ctrl-btn" id="backBtn">-10 dtk</button>
+    <button class="play-btn" id="playBtn">&#9658;</button>
+    <button class="ctrl-btn" id="fwdBtn">+10 dtk</button>
+  </div>
+
+  <audio id="audio" preload="none"></audio>
+</div>
+
+<script>
+  var songs = [
+    { title: "Kopi Dangdut", artist: "Fahmi Shahab", file: "songs/01-kopi-dangdut.mp3" },
+    { title: "Seperti Mati Lampu", artist: "King Nassar", file: "songs/02-seperti-mati-lampu.mp3" },
+    { title: "Surat Cinta", artist: "Vina Panduwinata", file: "songs/03-surat-cinta.mp3" },
+    { title: "Bendera", artist: "Coklat", file: "songs/04-bendera.mp3" },
+    { title: "Kebyar-Kebyar", artist: "Coklat", file: "songs/05-kebyar-kebyar.mp3" },
+    { title: "Anak Sekolah", artist: "Chrisye", file: "songs/06-anak-sekolah.mp3" },
+    { title: "Rumah Kita", artist: "Godbless", file: "songs/07-rumah-kita.mp3" },
+    { title: "Laskar Pelangi", artist: "Nidji", file: "songs/08-laskar-pelangi.mp3" },
+    { title: "Rungkad", artist: "Happy Asmara", file: "songs/09-rungkad.mp3" },
+    { title: "Bento", artist: "Iwan Fals", file: "songs/10-bento.mp3" }
+  ];
+
+  var grid = document.getElementById('grid');
+  var playerPanel = document.getElementById('playerPanel');
+  var playerNumber = document.getElementById('playerNumber');
+  var playerTitle = document.getElementById('playerTitle');
+  var playerArtist = document.getElementById('playerArtist');
+  var playerClose = document.getElementById('playerClose');
+  var resetBtn = document.getElementById('resetBtn');
+  var playedCountEl = document.getElementById('playedCount');
+  var audio = document.getElementById('audio');
+  var playBtn = document.getElementById('playBtn');
+  var backBtn = document.getElementById('backBtn');
+  var fwdBtn = document.getElementById('fwdBtn');
+  var seekBar = document.getElementById('seekBar');
+  var timeCurrent = document.getElementById('timeCurrent');
+  var timeTotal = document.getElementById('timeTotal');
+
+  var usedTiles = {};
+  var isSeeking = false;
+
+  function updateProgress(){
+    playedCountEl.textContent = Object.keys(usedTiles).length;
+  }
+
+  function formatTime(sec){
+    if(!isFinite(sec) || sec < 0) sec = 0;
+    var m = Math.floor(sec / 60);
+    var s = Math.floor(sec % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function openSong(index){
+    var song = songs[index];
+    playerNumber.textContent = 'Nomor ' + (index + 1);
+    playerTitle.textContent = song.title;
+    playerArtist.textContent = song.artist;
+
+    audio.pause();
+    audio.src = song.file;
+    audio.currentTime = 0;
+    seekBar.value = 0;
+    timeCurrent.textContent = '0:00';
+    timeTotal.textContent = '0:00';
+    playBtn.innerHTML = '&#9658;';
+
+    playerPanel.classList.add('open');
+    playerPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    audio.play().then(function(){
+      playBtn.innerHTML = '&#10074;&#10074;';
+    }).catch(function(){});
+
+    if(!usedTiles[index]){
+      usedTiles[index] = true;
+      grid.children[index].classList.add('used');
+      updateProgress();
+    }
+  }
+
+  for(var i = 0; i < 10; i++){
+    (function(idx){
+      var btn = document.createElement('button');
+      btn.className = 'tile';
+      btn.textContent = idx + 1;
+      btn.addEventListener('click', function(){ openSong(idx); });
+      grid.appendChild(btn);
+    })(i);
+  }
+
+  playerClose.addEventListener('click', function(){
+    audio.pause();
+    playerPanel.classList.remove('open');
+  });
+
+  resetBtn.addEventListener('click', function(){
+    usedTiles = {};
+    var tiles = grid.querySelectorAll('.tile');
+    for(var j = 0; j < tiles.length; j++){ tiles[j].classList.remove('used'); }
+    updateProgress();
+    audio.pause();
+    playerPanel.classList.remove('open');
+  });
+
+  playBtn.addEventListener('click', function(){
+    if(audio.paused){
+      audio.play();
+      playBtn.innerHTML = '&#10074;&#10074;';
+    } else {
+      audio.pause();
+      playBtn.innerHTML = '&#9658;';
+    }
+  });
+
+  backBtn.addEventListener('click', function(){
+    audio.currentTime = Math.max(0, audio.currentTime - 10);
+  });
+
+  fwdBtn.addEventListener('click', function(){
+    audio.currentTime = Math.min(audio.duration || audio.currentTime + 10, audio.currentTime + 10);
+  });
+
+  audio.addEventListener('loadedmetadata', function(){
+    seekBar.max = audio.duration;
+    timeTotal.textContent = formatTime(audio.duration);
+  });
+
+  audio.addEventListener('timeupdate', function(){
+    if(!isSeeking){
+      seekBar.value = audio.currentTime;
+      timeCurrent.textContent = formatTime(audio.currentTime);
+    }
+  });
+
+  audio.addEventListener('play', function(){ playBtn.innerHTML = '&#10074;&#10074;'; });
+  audio.addEventListener('pause', function(){ playBtn.innerHTML = '&#9658;'; });
+
+  seekBar.addEventListener('input', function(){
+    isSeeking = true;
+    timeCurrent.textContent = formatTime(seekBar.value);
+  });
+
+  seekBar.addEventListener('change', function(){
+    audio.currentTime = seekBar.value;
+    isSeeking = false;
+  });
+</script>
+
+</body>
+</html>
