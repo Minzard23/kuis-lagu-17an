@@ -240,6 +240,7 @@
     align-items:center;
     justify-content:center;
     gap: 14px;
+    margin-bottom: 20px;
   }
   .ctrl-btn{
     background: var(--parchment);
@@ -267,14 +268,41 @@
     padding: 0;
   }
   .play-btn:hover{ background: var(--maroon-dark); }
+  .lyrics-box{
+    background: var(--parchment);
+    border-radius: 12px;
+    padding: 20px 24px;
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+  }
+  .lyrics-inner{
+    position: relative;
+    transition: transform 0.25s linear;
+  }
+  .lyrics-inner p{
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    line-height: 1.9;
+    color: var(--ink-soft);
+    margin: 0;
+    white-space: pre-line;
+    text-align: center;
+  }
+  .lyrics-hint{
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 10px 0 0;
+    opacity: 0.7;
+  }
 </style>
 </head>
 <body>
 
 <div class="eyebrow">Dinas Pendidikan Kabupaten Bandung</div>
-<img src="asset/Logo disdik kab bandung.jpg" alt="Logo Disdik" style="width: 80px; margin-bottom: 20px; border-radius: 8px; border-color: black; box-shadow: 0 10px 12px rgba(0,0,0,0.25); margin-top: 10px;">
 <h1>Kuis lagu estafet 17 Agustusan</h1>
-<p class="subtitle">Pilih satu nomor, lagunya langsung muter di sini</p>
+<p class="subtitle">Pilih satu nomor, lagu dan liriknya langsung muncul di sini</p>
 
 <div class="board">
   <div class="grid" id="grid"></div>
@@ -306,21 +334,83 @@
     <button class="ctrl-btn" id="fwdBtn">+10 dtk</button>
   </div>
 
+  <div class="lyrics-box">
+    <div class="lyrics-inner" id="lyricsInner">
+      <p id="lyricsText">Lirik belum ditempel.</p>
+    </div>
+  </div>
+  <p class="lyrics-hint">Lirik scroll otomatis mengikuti durasi lagu</p>
+
   <audio id="audio" preload="none"></audio>
 </div>
 
 <script>
   var songs = [
-    { title: "Kopi Dangdut", artist: "Fahmi Shahab", file: "songs/01-kopi-dangdut.mp3" },
-    { title: "Seperti Mati Lampu", artist: "King Nassar", file: "songs/02-seperti-mati-lampu.mp3" },
-    { title: "Surat Cinta", artist: "Vina Panduwinata", file: "songs/03-surat-cinta.mp3" },
-    { title: "Bendera", artist: "Coklat", file: "songs/04-bendera.mp3" },
-    { title: "Kebyar-Kebyar", artist: "Coklat", file: "songs/05-kebyar-kebyar.mp3" },
-    { title: "Anak Sekolah", artist: "Chrisye", file: "songs/06-anak-sekolah.mp3" },
-    { title: "Rumah Kita", artist: "Godbless", file: "songs/07-rumah-kita.mp3" },
-    { title: "Laskar Pelangi", artist: "Nidji", file: "songs/08-laskar-pelangi.mp3" },
-    { title: "Rungkad", artist: "Happy Asmara", file: "songs/09-rungkad.mp3" },
-    { title: "Bento", artist: "Iwan Fals", file: "songs/10-bento.mp3" }
+    { title: "Kopi Dangdut", artist: "Fahmi Shahab", file: "songs/01-kopi-dangdut.mp3", lyrics: `Dag, da-da-dag-dig-dug detak jantungku
+Ser-ser-ser-ser bunyi darahku
+Da-da-dag-dig-dug detak jantungku
+Ser-ser-ser-ser, bunyi darahku
+Na-na-na, mengapa kamu
+Datang lagi menggodaku?
+Dulu hatiku membeku
+Bagaikan segumpal salju
+Ku tak mau peduli
+Biar hitam, biar putih
+Melangkah berhati-hati
+Asal jangan nyebur ke kali
+Kala kupandang kerlip bintang nun jauh di sana (sana)
+Sayup kudengar melodi cinta yang menggema
+Terasa kembali gelora jiwa mudaku
+Kar'na tersentuh alunan lagu semerdu kopi dangdut
+Api asmara yang dahulu pernah membara
+Semakin hangat bagai ciuman yang pertama
+Detak jantungku seakan ikut irama
+Kar'na terlena oleh pesona alunan kopi dangdut
+Irama kopi dangdut yang ceria
+Menyengat hati menjadi gairah
+Membuat aku lupa akan cintaku yang telah lalu
+Api asmara yang dahulu pernah membara
+Semakin hangat bagai ciuman yang pertama
+Detak jantungku seakan ikut irama
+Kar'na terlena oleh pesona alunan kopi dangdut
+Dag-dig-dug detak jantungku
+Ser-ser-ser bunyi darahku
+Dag-dig-dug detak jantungku
+Ser-ser-ser bunyi darahku
+Na-na-na, mengapa kamu
+Datang lagi menggodaku?
+Dulu hatiku membeku
+Bagaikan segumpal salju
+Ku tak mau peduli
+Biar hitam, biar putih
+Melangkah berhati-hati
+Asal jangan nyebur ke kali
+Api asmara yang dahulu pernah membara (membara)
+Semakin hangat bagai ciuman yang pertama
+Detak jantungku seakan ikut irama
+Kar'na terlena oleh pesona alunan kopi dangdut
+Irama kopi dangdut yang ceria
+Menyengat hati menjadi gairah
+Membuat aku lupa akan cintaku yang telah lalu
+Kala kupandang kerlip bintang nun jauh di sana
+Sayup kudengar melodi cinta yang menggema
+Terasa kembali gelora jiwa mudaku
+Kar'na tersentuh alunan lagu semerdu kopi dangdut
+Api asmara yang dahulu pernah membara
+Semakin hangat bagai ciuman yang pertama
+Detak jantungku seakan ikut irama
+Kar'na terlena oleh pesona alunan kopi dangdut
+Kar'na terlena oleh pesona alunan kopi dangdut
+Kar'na terlena oleh pesona alunan kopi dangdut` },
+    { title: "Seperti Mati Lampu", artist: "King Nassar", file: "songs/02-seperti-mati-lampu.mp3", lyrics: `TEMPEL LIRIK LAGU SEPERTI MATI LAMPU DI SINI` },
+    { title: "Surat Cinta", artist: "Vina Panduwinata", file: "songs/03-surat-cinta.mp3", lyrics: `TEMPEL LIRIK LAGU SURAT CINTA DI SINI` },
+    { title: "Bendera", artist: "Coklat", file: "songs/04-bendera.mp3", lyrics: `TEMPEL LIRIK LAGU BENDERA DI SINI` },
+    { title: "Kebyar-Kebyar", artist: "Coklat", file: "songs/05-kebyar-kebyar.mp3", lyrics: `TEMPEL LIRIK LAGU KEBYAR-KEBYAR DI SINI` },
+    { title: "Anak Sekolah", artist: "Chrisye", file: "songs/06-anak-sekolah.mp3", lyrics: `TEMPEL LIRIK LAGU ANAK SEKOLAH DI SINI` },
+    { title: "Rumah Kita", artist: "Godbless", file: "songs/07-rumah-kita.mp3", lyrics: `TEMPEL LIRIK LAGU RUMAH KITA DI SINI` },
+    { title: "Laskar Pelangi", artist: "Nidji", file: "songs/08-laskar-pelangi.mp3", lyrics: `TEMPEL LIRIK LAGU LASKAR PELANGI DI SINI` },
+    { title: "Rungkad", artist: "Happy Asmara", file: "songs/09-rungkad.mp3", lyrics: `TEMPEL LIRIK LAGU RUNGKAD DI SINI` },
+    { title: "Bento", artist: "Iwan Fals", file: "songs/10-bento.mp3", lyrics: `TEMPEL LIRIK LAGU BENTO DI SINI` }
   ];
 
   var grid = document.getElementById('grid');
@@ -338,6 +428,9 @@
   var seekBar = document.getElementById('seekBar');
   var timeCurrent = document.getElementById('timeCurrent');
   var timeTotal = document.getElementById('timeTotal');
+  var lyricsText = document.getElementById('lyricsText');
+  var lyricsInner = document.getElementById('lyricsInner');
+  var lyricsBox = document.querySelector('.lyrics-box');
 
   var usedTiles = {};
   var isSeeking = false;
@@ -358,6 +451,8 @@
     playerNumber.textContent = 'Nomor ' + (index + 1);
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
+    lyricsText.textContent = song.lyrics;
+    lyricsInner.style.transform = 'translateY(0px)';
 
     audio.pause();
     audio.src = song.file;
@@ -432,6 +527,11 @@
     if(!isSeeking){
       seekBar.value = audio.currentTime;
       timeCurrent.textContent = formatTime(audio.currentTime);
+    }
+    if(audio.duration){
+      var progressPct = audio.currentTime / audio.duration;
+      var scrollableHeight = Math.max(0, lyricsInner.scrollHeight - lyricsBox.clientHeight);
+      lyricsInner.style.transform = 'translateY(-' + (progressPct * scrollableHeight) + 'px)';
     }
   });
 
