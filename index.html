@@ -153,7 +153,7 @@
     background: var(--cream);
     border: 3px solid var(--gold);
     border-radius: 20px;
-    padding: 26px 30px;
+    padding: 24px;
     box-shadow: 0 24px 60px rgba(0,0,0,0.35);
     display: none;
   }
@@ -195,106 +195,48 @@
     cursor: pointer;
     padding: 4px;
   }
-  .seek-row{
-    display:flex;
-    align-items:center;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .time-label{
-    font-size: 12px;
-    color: var(--ink-soft);
-    min-width: 38px;
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-  }
-  input[type="range"]{
-    flex: 1;
-    -webkit-appearance: none;
-    height: 6px;
-    border-radius: 999px;
+  .video-wrap{
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: 12px;
+    overflow: hidden;
     background: var(--parchment);
-    outline: none;
   }
-  input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--maroon);
-    cursor: pointer;
-    border: 2px solid var(--cream);
-    box-shadow: 0 0 0 1px var(--gold);
+  .video-wrap iframe{
+    position: absolute;
+    top:0; left:0;
+    width: 100%;
+    height: 100%;
+    border: 0;
   }
-  input[type="range"]::-moz-range-thumb{
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--maroon);
-    cursor: pointer;
-    border: 2px solid var(--cream);
-    box-shadow: 0 0 0 1px var(--gold);
-  }
-  .controls-row{
+  .play-cover{
+    position: absolute;
+    top:0; left:0;
+    width: 100%;
+    height: 100%;
+    background: var(--parchment);
     display:flex;
     align-items:center;
     justify-content:center;
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-  .ctrl-btn{
-    background: var(--parchment);
-    border: none;
-    color: var(--maroon);
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    border-radius: 999px;
-    padding: 10px 16px;
     cursor: pointer;
-    transition: background 0.15s ease;
   }
-  .ctrl-btn:hover{ background: var(--gold-light); }
-  .play-btn{
+  .play-cover-btn{
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
     background: var(--maroon);
     color: var(--cream);
-    border-radius: 50%;
-    width: 56px;
-    height: 56px;
-    font-size: 20px;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding: 0;
+    font-size: 28px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease, background 0.15s ease;
   }
-  .play-btn:hover{ background: var(--maroon-dark); }
-  .lyrics-box{
-    background: var(--parchment);
-    border-radius: 12px;
-    padding: 20px 24px;
-    height: 220px;
-    overflow: hidden;
-    position: relative;
-  }
-  .lyrics-inner{
-    position: relative;
-    transition: transform 0.25s linear;
-  }
-  .lyrics-inner p{
-    font-family: 'Fraunces', serif;
-    font-size: 17px;
-    line-height: 1.9;
-    color: var(--ink-soft);
-    margin: 0;
-    white-space: pre-line;
-    text-align: center;
-  }
-  .lyrics-hint{
-    font-size: 12px;
-    color: var(--ink-soft);
-    text-align: center;
-    margin: 10px 0 0;
-    opacity: 0.7;
+  .play-cover:hover .play-cover-btn{
+    transform: scale(1.06);
+    background: var(--maroon-dark);
   }
 </style>
 </head>
@@ -302,7 +244,7 @@
 
 <div class="eyebrow">Dinas Pendidikan Kabupaten Bandung</div>
 <h1>Kuis lagu estafet 17 Agustusan</h1>
-<p class="subtitle">Pilih satu nomor, lagu dan liriknya langsung muncul di sini</p>
+<p class="subtitle">Pilih satu nomor, lalu tekan play buat muter video karaoke-nya</p>
 
 <div class="board">
   <div class="grid" id="grid"></div>
@@ -321,422 +263,38 @@
     </div>
     <button class="player-close" id="playerClose" aria-label="Tutup">&times;</button>
   </div>
-
-  <div class="seek-row">
-    <span class="time-label" id="timeCurrent">0:00</span>
-    <input type="range" id="seekBar" min="0" max="100" value="0" step="0.1">
-    <span class="time-label" id="timeTotal">0:00</span>
-  </div>
-
-  <div class="controls-row">
-    <button class="ctrl-btn" id="backBtn">-10 dtk</button>
-    <button class="play-btn" id="playBtn">&#9658;</button>
-    <button class="ctrl-btn" id="fwdBtn">+10 dtk</button>
-  </div>
-
-  <div class="lyrics-box">
-    <div class="lyrics-inner" id="lyricsInner">
-      <p id="lyricsText">Lirik belum ditempel.</p>
+  <div class="video-wrap">
+    <div class="play-cover" id="playCover">
+      <div class="play-cover-btn">&#9658;</div>
     </div>
+    <iframe id="ytFrame" src="" title="Video karaoke" allow="autoplay; encrypted-media" allowfullscreen style="display:none;"></iframe>
   </div>
-  <p class="lyrics-hint">Lirik scroll otomatis mengikuti durasi lagu</p>
-
-  <audio id="audio" preload="none"></audio>
 </div>
 
 <script>
   var songs = [
-    { title: "Kopi Dangdut", artist: "Fahmi Shahab", file: "songs/01-kopi-dangdut.mp3", introSeconds: 13, lyrics: `Kala kupandang kerlip bintang nun jauh disana
-Saat kudenger melodi cinta yang menggema
-Terasa kembali gelora jiwa mudaku
-Karna tersentuh alunan lagu semerdu kopi dangdut
-
-Api asmara yang dahulu pernah membara
-Semakin hangat bagai ciuman yang pertama
-Detak jantungku seakan ikut irama
-karna terlena oleh pesona alunan kopi dangdut
-
-Irama kopi dangdut yang ceria
-Menyengat hati menjadi gairah
-membuat aku lupa akan cintaku yang telah lalu
-
-Api asmara yang dahulu pernah membara
-Semakin hangat bagai ciuman yang pertama
-Detak jantungku seakan ikut irama
-Karna terlena oleh pesona alunan kopi dangdut
-
-Dag dig dug detak jantungku
-Ser ser ser bunyi darahku
-
-Na na na
-Mengapa kamu datang lagi menggodaku
-Dulu hatiku membeku
-Bagaikan segumpal salju
-
-Ku tak mau peduli
-biar hitam biar putih
-Melangkah berhati hati
-Asal jangan nyebur ke kali` },
-    { title: "Seperti Mati Lampu", artist: "King Nassar", file: "songs/02-seperti-mati-lampu.mp3", introSeconds: 69, lyrics: ` Janganlah kau tanyakan besarnya cintaku
-Ku persembahkan untukmu, hanya kepadamu
-Oh dan janganlah kau ragukan luasnya cintaku
-Yang putih tulus untukmu, hanya kepadamu
-Luasnya laut tak seluas cinta yang ku punya
-Tak sedalam cinta yang ku rasa, cintaku satu untukmu
-Tingginya langit tak setinggi kasih yang ku punya
-Tak setinggi kasih yang ku rasa, cintaku satu untukmu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Janganlah kau ragukan luasnya cintaku
-Kupersembahkan untukmu, hanya kepadamu
-Luasnya laut tak seluas cinta yang ku punya
-Tak sedalam cinta yang ku rasa, cintaku satu untukmu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu ya sayang, seperti mati lampu
-Cintaku tanpamu ya sayang bagai malam tiada berlalu
-Seperti mati lampu` },
-    { title: "Surat Cinta", artist: "Vina Panduwinata", file: "songs/03-surat-cinta.mp3", introSeconds: 23, lyrics: ` Bergetar hatiku
-Saat kuberkenalan dengannya
-Kudengar dia menyebutkan nama dirinya
-Sejak kubertemu, ku telah jatuh hati padanya
-Di dalam hati telah menjelma cinta dan bawalah daku selalu
-Dalam mimpimu, di langkahmu serta hidupmu
-Genggamlah daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya
-Bergetar hatiku saat kuberkenalan dengannya
-Kudengar dia menyebutkan nama dirinya
-Sejak kubertemu, ku telah jatuh hati padanya
-Di dalam hati telah menjelma cinta dan bawalah daku selalu
-Dalam mimpimu, di langkahmu serta hidupmu
-Genggamlah daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya
-Dalam mimpimu, di langkahmu serta hidupmu
-Genggamlah daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya
-uu-hu-uu
-u-huu
-Di dalam hati telah menjelma cinta dan bawalah daku selalu
-Dalam mimpimu, di langkahmu serta hidupmu
-Genggamlah daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya
-Dalam mimpimu, di langkahmu serta hidupmu
-Genggamlah daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya
-ha-ha
-Daku kini juga nanti
-Harapan di hatiku bawalah diriku selamanya` },
-    { title: "Bendera", artist: "Coklat", file: "songs/04-bendera.mp3", introSeconds: 83, lyrics: `Biar saja ku tak sehebat matahari
-Tapi s'lalu kucoba 'tuk menghangatkanmu
-Biar saja ku tak setegar batu karang
-Tapi s'lalu kucoba 'tuk melindungimu
-Biar saja ku tak seharum bunga mawar
-Tapi s'lalu kucoba 'tuk mengharumkanmu
-Biar saja ku tak seelok langit sore
-Tapi s'lalu kucoba 'tuk mengindahkanmu
-Kupertahankan kau demi kehormatan bangsa
-Kupertahankan kau demi tumpah darah
-S'mua pahlawan-pahlawanku
-Merah putih, teruslah kau berkibar
-Di ujung tiang tertinggi, di Indonesiaku ini
-Merah putih, teruslah kau berkibar
-Di ujung tiang tertinggi, di Indonesiaku ini
-Merah putih, teruslah kau berkibar
-Ku akan s'lalu menjagamu
-Biar saja ku tak seharum bunga mawar
-Tapi s'lalu kucoba 'tuk mengharumkanmu
-Biar saja ku tak seelok langit sore
-Tapi s'lalu kucoba 'tuk mengindahkanmu
-Kupertahankan kau demi kehormatan bangsa
-Kupertahankan kau demi tumpah darah
-S'mua pahlawan-pahlawanku
-Merah putih, teruslah kau berkibar
-Di ujung tiang tertinggi, di Indonesiaku ini
-Merah putih, teruslah kau berkibar
-Di ujung tiang tertinggi, di Indonesiaku ini
-Merah putih teruslah kau berkibar
-Ku akan s'lalu menjagamu
-Oh-oh, wo-oh, wo-oh` },
-    { title: "Kebyar-Kebyar", artist: "Coklat", file: "songs/05-kebyar-kebyar.mp3", introSeconds: 13, lyrics: `Indonesia
-Merah darahku putih tulangku
-Menyatu dalam semangatku
-Indonesia
-Debar jantungku denyut nadiku
-Berpadu dalam cita citaku
-Kebyar kebyar pelangi jingga
-Indonesia
-Tumpah darahku nafas hidupku
-Bersatu di dalam anganmu
-Indonesia
-Satu bangsaku dan bahasaku
-Berpadu didalam citamu
-Kebyar kebyar pelangi jingga
-Ku sing sing kan lengan
-Rawe rawe rantas
-Malang malang tuntas
-Denganmu
-Indonesia
-Merah darahku putih tulangku
-Menyatu dalam semangatku
-Indonesia
-Debar jantungku denyut nadiku
-Berpadu dalam cita citaku
-Kebyar kebyar pelangi jingga
-Pelangi jingga` },
-    { title: "Anak Sekolah", artist: "Chrisye", file: "songs/06-anak-sekolah.mp3", introSeconds: 0, lyrics: `Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Bukan aku tak tertarik
-Dengan kata rayuanmu
-Saat matamu melirik
-Aku jadi suka padamu
-Tiap kali kau bermanja
-Gemetar rasa di dada
-Ingin kubisikkan cinta
-Tapi hati ini malu jadinya
-Engkau masih anak sekolah, satu SMA
-Belum tepat waktu 'tuk begitu-begini
-Anak sekolah datang kembali
-Dua atau tiga tahun lagi
-Wo-wo-ah-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Bukan aku tak tertarik
-Dengan kata rayuanmu
-Saat matamu melirik
-Aku jadi suka padamu
-Tiap kali kau bermanja
-Gemetar rasa di dada
-Ingin kubisikkan cinta
-Tapi hati ini malu jadinya
-Engkau masih anak sekolah, satu SMA
-Belum tepat waktu 'tuk begitu-begini
-Anak sekolah datang kembali
-Dua atau tiga tahun lagi
-Wo-wo-ah-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Ingin kubisikkan cinta
-Tapi hati ini malu jadinya
-Engkau masih anak sekolah, satu SMA
-Belum tepat waktu 'tuk begitu-begini
-Anak sekolah datang kembali
-Dua atau tiga tahun lagi
-Engkau masih anak sekolah, satu SMA
-Belum tepat waktu 'tuk begitu-begini
-Anak sekolah datang kembali
-Dua atau tiga tahun lagi
-Wo-wo-ah-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya-ya-ya, ya-ya
-Wo-wo-wo-wo
-Ah-ya-ya...` },
-    { title: "Rumah Kita", artist: "Godbless", file: "songs/07-rumah-kita.mp3", introSeconds: 25, lyrics: `Hanya bilik bambu tempat tinggal kita
-Tanpa hiasan, tanpa lukisan
-Beratap jerami, beralaskan tanah
-Namun semua ini punya kita
-Memang semua ini milik kita, sendiri
-
-Hanya alang alang pagar rumah kita
-Tanya anyelir, tanpa melati
-Hanya bunga bakung tumbuh di halaman
-Namun semua itu punya kita
-Memang semua itu milik kita
-
-Haruskah kita beranjak ke kota
-Yang penuh dengan tanya
-
-Lebih baik di sini, rumah kita sendiri
-Segala nikmat dan anugerah yang kuasa
-Semuanya ada di sini
-Rumah kita
-
-Lebih baik di sini, rumah kita sendiri
-Segala nikmat dan anugerah yang kuasa
-Semuanya ada di sini
-Rumah kita
-
-Lebih baik di sini, rumah kita sendiri
-Segala nikmat dan anugerah yang kuasa
-Semuanya ada di sini
-Rumah kita
-Rumah kita
-Ada di sini` },
-    { title: "Laskar Pelangi", artist: "Nidji", file: "songs/08-laskar-pelangi.mp3", introSeconds: 10, lyrics: `Mimpi adalah kunci
-Untuk kita menaklukkan dunia
-Berlarilah tanpa lelah
-Sampai engkau meraihnya
-Laskar pelangi
-Takkan terikat waktu
-Bebaskan mimpimu di angkasa
-Warnai bintang di jiwa
-Menarilah dan terus tertawa
-Walau dunia tak seindah surga
-Bersyukurlah pada Yang Kuasa
-Cinta kita di dunia
-Selamanya
-Cinta kepada hidup
-Memberikan senyuman abadi
-Walau hidup kadang tak adil
-Tapi cinta lengkapi kita
-Ho-oh
-Oh-oh-oh, oh-oh, ho-oh
-Laskar pelangi
-Takkan terikat waktu
-Jangan berhenti mewarnai
-Jutaan mimpi di bumi, oh
-Menarilah dan terus tertawa
-Walau dunia tak seindah surga
-Bersyukurlah pada Yang Kuasa
-Cinta kita di dunia, ho-oh
-Menarilah dan terus tertawa
-Walau dunia tak seindah surga
-Bersyukurlah pada Yang Kuasa
-Cinta kita di dunia
-Selamanya
-Selamanya
-Laskar pelangi
-Takkan terikat waktu, oh` },
-    { title: "Rungkad", artist: "Happy Asmara", file: "songs/09-rungkad.mp3", introSeconds: 0, lyrics: `Rungkad
-Entek entek an
-Kelangan koe sing paling tak sayang
-Stop mencintaimu
-Gawe aku ngelu
-....
-....
-....
-....
-Mungkin
-Aku terlalu cinta
-Aku terlalu sayang nganti
-Ra kroso dilarani
-Pancen
-Ku akui kusalah
-Terlalu percoyo mergo
-Mung nyawang rupo
-Saiki aku wes sadar
-Terlalu goblok mencintaimu
-Rungkad
-Entek entek an
-Kelangan koe sing paling tak sayang
-Bondoku melayang tego tenan
-Tangis tangisan
-Rungkad
-Entek entekan
-Tresno tulusku mung dinggo dolanan
-Stop mencintaimu
-Gawe aku ngelu
-Mungkin
-Aku terlalu cinta
-Aku terlalu sayang nganti
-Ra kroso dilarani
-Pancen
-Ku akui kusalah
-Terlalu percoyo mergo
-Nyawang rupo
-Saiki aku wes sadar
-Terlalu goblok mencintaimu
-Rungkad
-Entek entek an
-Kelangan koe sing paling tak sayang
-Bondoku melayang tego tenan
-Tangis tangisan
-Rungkad
-Entek entekan
-Tresno tulusku mung dinggo dolanan
-Stop mencintaimu
-Gawe aku ngelu
-Rungkad
-Entek entek an
-Kelangan koe sing paling tak sayang
-Bondoku melayang tego tenan
-Tangis tangisan
-Rungkad
-Entek entekan
-Tresno tulusku mung dinggo dolanan
-Stop mencintaimu
-Gawe aku ngelu
-Stop mencintaimu
-Gawe aku ngelu` },
-    { title: "Bento", artist: "Iwan Fals", file: "songs/10-bento.mp3", introSeconds: 30, lyrics: `Namaku Bento
-Rumah real estate
-Mobilku banyak harta berlimpah
-Orang memanggilku boss eksekutif
-Tokoh papan atas atas sgalanya
-Asyik
-Wajahku ganteng banyak simpanan
-Sekali lirik oke sajalah
-Bisnisku menjagal jagal apa saja
-Yang penting aku senang aku menang
-Persetan orang susah karena aku
-Yang penting asik sekali lagi
-Asyik
-Khotbah soal moral omong keadilan
-Sarapan pagiku
-Aksi tipu-tipu lobying dan upeti woo jagonya
-Maling kelas teri bandit kelas coro
-Itu kantong sampah
-Siapa yang mau berguru datang padaku
-Sebut tiga kali namaku Bento Bento Bento
-Asyik (asyik)
-Namaku Bento
-Rumah real estate
-Mobilku banyak harta berlimpah
-Orang memanggilku boss eksekutif
-Tokoh papan atas atas sgalanya
-Asyik
-Wajahku ganteng banyak simpanan
-Sekali lirik oke sajalah
-Bisnisku menjagal jagal apa saja
-Yang penting aku senang aku menang
-Persetan orang susah karena aku
-Yang penting asyik sekali lagi
-Asyik
-Khotbah soal moral omong keadilan
-Sarapan pagiku
-Aksi tipu-tipu lobying dan upeti wo jagonya
-Maling kelas teri bandit kelas coro
-Itu kantong sampah
-Siapa yang mau berguru datang padaku
-Sebut namaku Bento Bento
-Bento
-Yia ha ha ha Bento
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Asyik
-Bento` }
+    { title: "Kopi Dangdut", artist: "Fahmi Shahab", yt: "https://www.youtube.com/watch?v=nN36Q-avzMk&list=RDnN36Q-avzMk&start_radio=1" },
+    { title: "Seperti Mati Lampu", artist: "King Nassar", yt: "https://www.youtube.com/watch?v=iKdLkb4Md9w&list=RDiKdLkb4Md9w&start_radio=1" },
+    { title: "Surat Cinta", artist: "Vina Panduwinata", yt: "https://www.youtube.com/watch?v=5rQQQVe3M98&list=RD5rQQQVe3M98&start_radio=1" },
+    { title: "Bendera", artist: "Coklat", yt: "https://www.youtube.com/watch?v=JoU5RtViDPE&list=RDJoU5RtViDPE&start_radio=1" },
+    { title: "Kebyar-Kebyar", artist: "Coklat", yt: "https://www.youtube.com/watch?v=4kiwdB84ewg&list=RD4kiwdB84ewg&start_radio=1" },
+    { title: "Anak Sekolah", artist: "Chrisye", yt: "https://www.youtube.com/watch?v=NeauPF1zBj4&list=RDNeauPF1zBj4&start_radio=1" },
+    { title: "Rumah Kita", artist: "Godbless", yt: "https://www.youtube.com/watch?v=hRbQUa9e8tM&list=RDhRbQUa9e8tM&start_radio=1" },
+    { title: "Laskar Pelangi", artist: "Nidji", yt: "https://www.youtube.com/watch?v=iP3Nd__w0HE&list=RDiP3Nd__w0HE&start_radio=1" },
+    { title: "Rungkad", artist: "Happy Asmara", yt: "https://www.youtube.com/watch?v=MVOhue-Vrxo&list=RDMVOhue-Vrxo&start_radio=1" },
+    { title: "Bento", artist: "Iwan Fals", yt: "https://www.youtube.com/watch?v=zlxT49ueIXI&list=RDzlxT49ueIXI&start_radio=1" }
   ];
+
+  function extractVideoId(input){
+    input = input.trim();
+    var watchMatch = input.match(/[?&]v=([^&]+)/);
+    if(watchMatch) return watchMatch[1];
+    var shortMatch = input.match(/youtu\.be\/([^?&]+)/);
+    if(shortMatch) return shortMatch[1];
+    var embedMatch = input.match(/embed\/([^?&]+)/);
+    if(embedMatch) return embedMatch[1];
+    return input;
+  }
 
   var grid = document.getElementById('grid');
   var playerPanel = document.getElementById('playerPanel');
@@ -746,55 +304,29 @@ Bento` }
   var playerClose = document.getElementById('playerClose');
   var resetBtn = document.getElementById('resetBtn');
   var playedCountEl = document.getElementById('playedCount');
-  var audio = document.getElementById('audio');
-  var playBtn = document.getElementById('playBtn');
-  var backBtn = document.getElementById('backBtn');
-  var fwdBtn = document.getElementById('fwdBtn');
-  var seekBar = document.getElementById('seekBar');
-  var timeCurrent = document.getElementById('timeCurrent');
-  var timeTotal = document.getElementById('timeTotal');
-  var lyricsText = document.getElementById('lyricsText');
-  var lyricsInner = document.getElementById('lyricsInner');
-  var lyricsBox = document.querySelector('.lyrics-box');
+  var ytFrame = document.getElementById('ytFrame');
+  var playCover = document.getElementById('playCover');
 
   var usedTiles = {};
-  var isSeeking = false;
-  var currentIndex = 0;
+  var currentSong = null;
 
   function updateProgress(){
     playedCountEl.textContent = Object.keys(usedTiles).length;
   }
 
-  function formatTime(sec){
-    if(!isFinite(sec) || sec < 0) sec = 0;
-    var m = Math.floor(sec / 60);
-    var s = Math.floor(sec % 60);
-    return m + ':' + (s < 10 ? '0' : '') + s;
-  }
-
   function openSong(index){
     var song = songs[index];
-    currentIndex = index;
+    currentSong = song;
     playerNumber.textContent = 'Nomor ' + (index + 1);
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
-    lyricsText.textContent = song.lyrics;
-    lyricsInner.style.transform = 'translateY(0px)';
 
-    audio.pause();
-    audio.src = song.file;
-    audio.currentTime = 0;
-    seekBar.value = 0;
-    timeCurrent.textContent = '0:00';
-    timeTotal.textContent = '0:00';
-    playBtn.innerHTML = '&#9658;';
+    ytFrame.src = '';
+    ytFrame.style.display = 'none';
+    playCover.style.display = 'flex';
 
     playerPanel.classList.add('open');
     playerPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    audio.play().then(function(){
-      playBtn.innerHTML = '&#10074;&#10074;';
-    }).catch(function(){});
 
     if(!usedTiles[index]){
       usedTiles[index] = true;
@@ -813,8 +345,18 @@ Bento` }
     })(i);
   }
 
+  playCover.addEventListener('click', function(){
+    if(!currentSong) return;
+    var videoId = extractVideoId(currentSong.yt);
+    ytFrame.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1';
+    ytFrame.style.display = 'block';
+    playCover.style.display = 'none';
+  });
+
   playerClose.addEventListener('click', function(){
-    audio.pause();
+    ytFrame.src = '';
+    ytFrame.style.display = 'none';
+    playCover.style.display = 'flex';
     playerPanel.classList.remove('open');
   });
 
@@ -823,60 +365,10 @@ Bento` }
     var tiles = grid.querySelectorAll('.tile');
     for(var j = 0; j < tiles.length; j++){ tiles[j].classList.remove('used'); }
     updateProgress();
-    audio.pause();
+    ytFrame.src = '';
+    ytFrame.style.display = 'none';
+    playCover.style.display = 'flex';
     playerPanel.classList.remove('open');
-  });
-
-  playBtn.addEventListener('click', function(){
-    if(audio.paused){
-      audio.play();
-      playBtn.innerHTML = '&#10074;&#10074;';
-    } else {
-      audio.pause();
-      playBtn.innerHTML = '&#9658;';
-    }
-  });
-
-  backBtn.addEventListener('click', function(){
-    audio.currentTime = Math.max(0, audio.currentTime - 10);
-  });
-
-  fwdBtn.addEventListener('click', function(){
-    audio.currentTime = Math.min(audio.duration || audio.currentTime + 10, audio.currentTime + 10);
-  });
-
-  audio.addEventListener('loadedmetadata', function(){
-    seekBar.max = audio.duration;
-    timeTotal.textContent = formatTime(audio.duration);
-  });
-
-  audio.addEventListener('timeupdate', function(){
-    if(!isSeeking){
-      seekBar.value = audio.currentTime;
-      timeCurrent.textContent = formatTime(audio.currentTime);
-    }
-    if(audio.duration){
-      var song = songs[currentIndex];
-      var intro = song.introSeconds || 0;
-      var effectiveTime = Math.max(0, audio.currentTime - intro);
-      var effectiveDuration = Math.max(0.001, audio.duration - intro);
-      var progressPct = Math.min(1, effectiveTime / effectiveDuration);
-      var scrollableHeight = Math.max(0, lyricsInner.scrollHeight - lyricsBox.clientHeight);
-      lyricsInner.style.transform = 'translateY(-' + (progressPct * scrollableHeight) + 'px)';
-    }
-  });
-
-  audio.addEventListener('play', function(){ playBtn.innerHTML = '&#10074;&#10074;'; });
-  audio.addEventListener('pause', function(){ playBtn.innerHTML = '&#9658;'; });
-
-  seekBar.addEventListener('input', function(){
-    isSeeking = true;
-    timeCurrent.textContent = formatTime(seekBar.value);
-  });
-
-  seekBar.addEventListener('change', function(){
-    audio.currentTime = seekBar.value;
-    isSeeking = false;
   });
 </script>
 
